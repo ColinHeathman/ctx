@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+if ! echo "$*" | grep -Eq "\S+\/\S+\/\S+"; then
+    "${HOME}/.local/share/ctx/ctx.sh" "$@"
+    return
+fi
+
+return
+
+if ! TARGET=$("${HOME}/.local/share/ctx/ctx.sh" "$@"); then
+    return
+fi
+
+project=$(echo "${TARGET}" | awk '{print $1}')
+cluster=$(echo "${TARGET}" | awk '{print $2}')
+region=$(echo "${TARGET}" | awk '{print $3}')
+
+
+if ! gcloud config set project "${project}"; then
+    return
+fi
+
+KUBE_DIR="${HOME}/.kube"
+CTX_DIR="${KUBE_DIR}/${project}/${cluster}/${region}"
+mkdir -p "${CTX_DIR}"
+export KUBECONFIG="${CTX_DIR}/config"
+touch "${KUBECONFIG}"
+
+if ! gcloud container clusters get-credentials "${cluster}" --region="${region}"; then
+    return
+fi
+
+NOFORMAT='\033[0m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+PS1="\[\e\$(iterm2_prompt_mark)\]\$(whoami)@cloudshell (\[\e${CYAN}\]$project\[\e${NOFORMAT}\]/\[\e${PURPLE}\]$cluster\[\e${NOFORMAT}\]):\[\e${BLUE}\]\w\[\e${NOFORMAT}\] "
+export PS1
