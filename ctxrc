@@ -5,8 +5,6 @@ if ! echo "$*" | grep -Eq "\S+\/\S+\/\S+"; then
     return
 fi
 
-return
-
 if ! TARGET=$("${HOME}/.local/share/ctx/ctx.sh" "$@"); then
     return
 fi
