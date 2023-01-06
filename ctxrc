@@ -24,7 +24,7 @@ mkdir -p "${CTX_DIR}"
 export KUBECONFIG="${CTX_DIR}/config"
 touch "${KUBECONFIG}"
 
-if ! gcloud container clusters get-credentials "${cluster}" --region="${region}"; then
+if ! USE_GKE_GCLOUD_AUTH_PLUGIN=True gcloud container clusters get-credentials "${cluster}" --region="${region}"; then
     return
 fi
 
