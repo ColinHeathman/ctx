@@ -83,7 +83,11 @@ project_contexts() {
 
     PROJECTS=($(gcloud projects list --filter="parent.id=(${PROJECT_PARENTS[*]})" --format=json | jq -r '.[] | .projectId')) 
     for project_id in "${PROJECTS[@]}" ; do
-        gcloud "--project=${project_id}" container clusters list --format=json | jq -r '.[] | "\(.name) \(.location)"' | while read -r cluster_info ; do
+        if ! gcloud --project=${project_id} container clusters list > /dev/null 2> /dev/null; then
+	    echo "skip ${project_id}"
+	    continue
+	fi
+        gcloud	"--project=${project_id}" container clusters list --format=json | jq -r '.[] | "\(.name) \(.location)"' | while read -r cluster_info ; do
             cluster_id=$(echo "$cluster_info" | awk '{print $1}')
             region_id=$(echo "$cluster_info" | awk '{print $2}')
             [[ -n $project_id ]] && [[ -n $cluster_id ]] && [[ -n $region_id ]] && echo "$project_id/$cluster_id/$region_id" && msg "found ${CYAN}$project_id${NOFORMAT}/${PURPLE}$cluster_id${NOFORMAT}/${BLUE}$region_id${NOFORMAT}"
